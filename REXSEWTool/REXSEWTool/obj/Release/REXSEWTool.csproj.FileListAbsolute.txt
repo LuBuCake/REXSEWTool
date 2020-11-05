@@ -1,0 +1,9 @@
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\bin\Release\REXSEWTool.exe.config
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\bin\Release\REXSEWTool.exe
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\bin\Release\REXSEWTool.pdb
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.Main.resources
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.Properties.Resources.resources
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.csproj.GenerateResource.cache
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.csproj.CoreCompileInputs.cache
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.exe
+C:\Users\madne\Documents\GitHub\REXSEWTool\REXSEWTool\REXSEWTool\obj\Release\REXSEWTool.pdb
