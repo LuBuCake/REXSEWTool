@@ -32,6 +32,10 @@
             this.CopyrightLabel = new System.Windows.Forms.Label();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.XSEWTab = new System.Windows.Forms.TabPage();
+            this.ToWAVGPBox = new System.Windows.Forms.GroupBox();
+            this.ToWAVOpenFilesButton = new System.Windows.Forms.Button();
+            this.ToWAVFilePathBox = new System.Windows.Forms.TextBox();
+            this.ToWAVButton = new System.Windows.Forms.Button();
             this.ToXSEWGPBox = new System.Windows.Forms.GroupBox();
             this.ToXSEWREV = new System.Windows.Forms.RadioButton();
             this.ToXSEWRE6 = new System.Windows.Forms.RadioButton();
@@ -51,19 +55,15 @@
             this.SPACNameTextBox = new System.Windows.Forms.TextBox();
             this.OpenSPACButton = new System.Windows.Forms.Button();
             this.SaveSPACButton = new System.Windows.Forms.Button();
-            this.ToWAVGPBox = new System.Windows.Forms.GroupBox();
-            this.ToWAVOpenFilesButton = new System.Windows.Forms.Button();
-            this.ToWAVFilePathBox = new System.Windows.Forms.TextBox();
-            this.ToWAVButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.XSEWTab.SuspendLayout();
+            this.ToWAVGPBox.SuspendLayout();
             this.ToXSEWGPBox.SuspendLayout();
             this.SPACTab.SuspendLayout();
             this.SPACToolsGPBox.SuspendLayout();
             this.SPACToolsReplaceGPBox.SuspendLayout();
             this.SPACToolsExtractGPBox.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.ToWAVGPBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // CopyrightLabel
@@ -98,6 +98,46 @@
             this.XSEWTab.Text = "XSEW Converter";
             this.XSEWTab.UseVisualStyleBackColor = true;
             // 
+            // ToWAVGPBox
+            // 
+            this.ToWAVGPBox.Controls.Add(this.ToWAVOpenFilesButton);
+            this.ToWAVGPBox.Controls.Add(this.ToWAVFilePathBox);
+            this.ToWAVGPBox.Controls.Add(this.ToWAVButton);
+            this.ToWAVGPBox.Location = new System.Drawing.Point(6, 6);
+            this.ToWAVGPBox.Name = "ToWAVGPBox";
+            this.ToWAVGPBox.Size = new System.Drawing.Size(345, 78);
+            this.ToWAVGPBox.TabIndex = 5;
+            this.ToWAVGPBox.TabStop = false;
+            this.ToWAVGPBox.Text = "Convert to WAV (16 bit signed PCM)";
+            // 
+            // ToWAVOpenFilesButton
+            // 
+            this.ToWAVOpenFilesButton.Location = new System.Drawing.Point(299, 18);
+            this.ToWAVOpenFilesButton.Name = "ToWAVOpenFilesButton";
+            this.ToWAVOpenFilesButton.Size = new System.Drawing.Size(25, 23);
+            this.ToWAVOpenFilesButton.TabIndex = 1;
+            this.ToWAVOpenFilesButton.Text = "...";
+            this.ToWAVOpenFilesButton.UseVisualStyleBackColor = true;
+            this.ToWAVOpenFilesButton.Click += new System.EventHandler(this.ToWAVOpenFilesButton_Click);
+            // 
+            // ToWAVFilePathBox
+            // 
+            this.ToWAVFilePathBox.AllowDrop = true;
+            this.ToWAVFilePathBox.Location = new System.Drawing.Point(22, 18);
+            this.ToWAVFilePathBox.Name = "ToWAVFilePathBox";
+            this.ToWAVFilePathBox.Size = new System.Drawing.Size(271, 23);
+            this.ToWAVFilePathBox.TabIndex = 0;
+            // 
+            // ToWAVButton
+            // 
+            this.ToWAVButton.Location = new System.Drawing.Point(237, 47);
+            this.ToWAVButton.Name = "ToWAVButton";
+            this.ToWAVButton.Size = new System.Drawing.Size(87, 23);
+            this.ToWAVButton.TabIndex = 0;
+            this.ToWAVButton.Text = "Convert";
+            this.ToWAVButton.UseVisualStyleBackColor = true;
+            this.ToWAVButton.Click += new System.EventHandler(this.ToWAVButton_Click);
+            // 
             // ToXSEWGPBox
             // 
             this.ToXSEWGPBox.Controls.Add(this.ToXSEWREV);
@@ -110,7 +150,7 @@
             this.ToXSEWGPBox.Size = new System.Drawing.Size(345, 77);
             this.ToXSEWGPBox.TabIndex = 4;
             this.ToXSEWGPBox.TabStop = false;
-            this.ToXSEWGPBox.Text = "Fix / Convert XSEW";
+            this.ToXSEWGPBox.Text = "Convert to XSEW (Microsoft ADPCM)";
             // 
             // ToXSEWREV
             // 
@@ -296,46 +336,6 @@
             this.SaveSPACButton.UseVisualStyleBackColor = true;
             this.SaveSPACButton.Click += new System.EventHandler(this.SaveSPACButton_Click);
             // 
-            // ToWAVGPBox
-            // 
-            this.ToWAVGPBox.Controls.Add(this.ToWAVOpenFilesButton);
-            this.ToWAVGPBox.Controls.Add(this.ToWAVFilePathBox);
-            this.ToWAVGPBox.Controls.Add(this.ToWAVButton);
-            this.ToWAVGPBox.Location = new System.Drawing.Point(6, 6);
-            this.ToWAVGPBox.Name = "ToWAVGPBox";
-            this.ToWAVGPBox.Size = new System.Drawing.Size(345, 78);
-            this.ToWAVGPBox.TabIndex = 5;
-            this.ToWAVGPBox.TabStop = false;
-            this.ToWAVGPBox.Text = "Convert to WAV";
-            // 
-            // ToWAVOpenFilesButton
-            // 
-            this.ToWAVOpenFilesButton.Location = new System.Drawing.Point(299, 18);
-            this.ToWAVOpenFilesButton.Name = "ToWAVOpenFilesButton";
-            this.ToWAVOpenFilesButton.Size = new System.Drawing.Size(25, 23);
-            this.ToWAVOpenFilesButton.TabIndex = 1;
-            this.ToWAVOpenFilesButton.Text = "...";
-            this.ToWAVOpenFilesButton.UseVisualStyleBackColor = true;
-            this.ToWAVOpenFilesButton.Click += new System.EventHandler(this.ToWAVOpenFilesButton_Click);
-            // 
-            // ToWAVFilePathBox
-            // 
-            this.ToWAVFilePathBox.AllowDrop = true;
-            this.ToWAVFilePathBox.Location = new System.Drawing.Point(22, 18);
-            this.ToWAVFilePathBox.Name = "ToWAVFilePathBox";
-            this.ToWAVFilePathBox.Size = new System.Drawing.Size(271, 23);
-            this.ToWAVFilePathBox.TabIndex = 0;
-            // 
-            // ToWAVButton
-            // 
-            this.ToWAVButton.Location = new System.Drawing.Point(237, 47);
-            this.ToWAVButton.Name = "ToWAVButton";
-            this.ToWAVButton.Size = new System.Drawing.Size(87, 23);
-            this.ToWAVButton.TabIndex = 0;
-            this.ToWAVButton.Text = "Convert";
-            this.ToWAVButton.UseVisualStyleBackColor = true;
-            this.ToWAVButton.Click += new System.EventHandler(this.ToWAVButton_Click);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -353,6 +353,8 @@
             this.Load += new System.EventHandler(this.Main_Load);
             this.MainTabControl.ResumeLayout(false);
             this.XSEWTab.ResumeLayout(false);
+            this.ToWAVGPBox.ResumeLayout(false);
+            this.ToWAVGPBox.PerformLayout();
             this.ToXSEWGPBox.ResumeLayout(false);
             this.ToXSEWGPBox.PerformLayout();
             this.SPACTab.ResumeLayout(false);
@@ -362,8 +364,6 @@
             this.SPACToolsExtractGPBox.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.ToWAVGPBox.ResumeLayout(false);
-            this.ToWAVGPBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
