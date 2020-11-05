@@ -84,20 +84,16 @@ namespace REXSEWTool
             int sample1 = Sign_Extend(BlockHeader[2], 16);
             int sample2 = Sign_Extend(BlockHeader[3], 16);
 
-            result[result_index] = sample2;
-            result_index++;
-            result[result_index] = sample1;
-            result_index++;
+            result[result_index] = sample2; result_index++;
+            result[result_index] = sample1; result_index++;
 
             int coeff1 = AdaptCoeff1[predictor];
             int coeff2 = AdaptCoeff2[predictor];
 
             for (int i = 0; i < BlockData.Length; i++)
             {
-                result[result_index] = IMA_MS_ExpandNibble(BlockData[i], 4, ref predictor, ref sample1, ref sample2, ref coeff1, ref coeff2, ref delta);
-                result_index++;
-                result[result_index] = IMA_MS_ExpandNibble(BlockData[i], 0, ref predictor, ref sample1, ref sample2, ref coeff1, ref coeff2, ref delta);
-                result_index++;
+                result[result_index] = IMA_MS_ExpandNibble(BlockData[i], 4, ref predictor, ref sample1, ref sample2, ref coeff1, ref coeff2, ref delta); result_index++;
+                result[result_index] = IMA_MS_ExpandNibble(BlockData[i], 0, ref predictor, ref sample1, ref sample2, ref coeff1, ref coeff2, ref delta); result_index++;
             }
 
             return result;
@@ -117,8 +113,7 @@ namespace REXSEWTool
             else
                 bias = delta / 2;
 
-            nibble = (nibble + bias) / delta;
-            nibble &= 0x0F;
+            nibble = ((nibble + bias) / delta) & 0xF;
 
             predictor += ((nibble & 0x08) == 8 ? (nibble - 16) : nibble) * delta;
 
@@ -126,6 +121,7 @@ namespace REXSEWTool
             sample1 = Clamp(predictor, -32768, 32767);
 
             delta = (AdaptationTable[nibble] * delta) >> 8;
+
             if (delta < 16)
                 delta = 16;
 
@@ -134,10 +130,10 @@ namespace REXSEWTool
 
         public static int[] GenerateBlockHeader(int[] SoundData, ref int predictor, ref int delta, ref int sample1, ref int sample2, ref int sample_index)
         {
-            // Update next samples and apply them into the header
-
             sample1 = SoundData[sample_index]; sample_index++;
             sample2 = SoundData[sample_index]; sample_index++;
+
+            delta = 16;
 
             int[] BlockHeader = new int[4];
             BlockHeader[0] = predictor;
@@ -148,7 +144,7 @@ namespace REXSEWTool
             return BlockHeader;
         }
 
-        public static int[] GenerateBlockData(int[] SoundData, ref int predictor, ref int coeff1, ref int coeff2, ref int sample1, ref int sample2, ref int delta, ref int sample_index)
+        public static int[] GenerateBlockData(int[] SoundData, ref int coeff1, ref int coeff2, ref int sample1, ref int sample2, ref int delta, ref int sample_index)
         {
             int[] BlockData = new int[63];
 
@@ -172,7 +168,7 @@ namespace REXSEWTool
             SoundData.CopyTo(newsounddata, index);
             index += SoundData.Length;
 
-            if (SoundData.Length < newsounddata.Length)
+            if (SoundData.Length < newsounddata.Length) // Will probably aways be
             {
                 for (int i = index; i < newsounddata.Length; i++)
                 {
@@ -196,7 +192,7 @@ namespace REXSEWTool
             int sample_index = 0;
 
             int predictor = 0;
-            int delta = 16;
+            int delta = 0;
             int coeff1 = AdaptCoeff1[predictor];
             int coeff2 = AdaptCoeff2[predictor];
             int sample1 = 0;
@@ -205,7 +201,7 @@ namespace REXSEWTool
             for (int i = 0; i < BlockQuantity; i++)
             {
                 Result[0][i] = GenerateBlockHeader(SoundData, ref predictor, ref delta, ref sample1, ref sample2, ref sample_index);
-                Result[1][i] = GenerateBlockData(SoundData, ref predictor, ref coeff1, ref coeff2, ref sample1, ref sample2, ref delta, ref sample_index);
+                Result[1][i] = GenerateBlockData(SoundData, ref coeff1, ref coeff2, ref sample1, ref sample2, ref delta, ref sample_index);
             }
 
             return Result;
