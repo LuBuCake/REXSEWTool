@@ -11,4 +11,5 @@ Tool for manipulating XSEW/SPC files from [MT Framework](https://en.wikipedia.or
 ## License
 
 RESIDENT EVIL XSEW Tool codebase is  licensed under GPL V3.0.
+
 Please refer to the LICENSE file for detailed information.
