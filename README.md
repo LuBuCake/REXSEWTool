@@ -5,8 +5,8 @@ Tool for manipulating XSEW/SPC files from [MT Framework](https://en.wikipedia.or
 
 ##Features
 
-*Convert XSEW to WAVE and vice-versa.
-*Extract and replace XSEW files inside RESIDENT EVIL 6 SPC containers.
+* Convert XSEW to WAVE and vice-versa.
+* Extract and replace XSEW files inside RESIDENT EVIL 6 SPC containers.
 
 ## License
 
