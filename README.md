@@ -3,7 +3,7 @@ RESIDENT EVIL XSEW Tool
 
 Tool for manipulating XSEW/SPC files from [MT Framework](https://en.wikipedia.org/wiki/MT_Framework) 2.x RESIDENT EVIL games.
 
-##Features
+## Features
 
 * Convert XSEW to WAVE and vice-versa.
 * Extract and replace XSEW files inside RESIDENT EVIL 6 SPC containers.
