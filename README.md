@@ -11,5 +11,8 @@ Tool for manipulating XSEW/SPC files from [MT Framework](https://en.wikipedia.or
 ## License
 
 RESIDENT EVIL XSEW Tool codebase is  licensed under GPL V3.0.
-
 Please refer to the LICENSE file for detailed information.
+
+## Icon
+
+<div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
