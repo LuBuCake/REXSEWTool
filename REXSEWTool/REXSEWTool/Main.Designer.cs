@@ -55,6 +55,7 @@
             this.SPACNameTextBox = new System.Windows.Forms.TextBox();
             this.OpenSPACButton = new System.Windows.Forms.Button();
             this.SaveSPACButton = new System.Windows.Forms.Button();
+            this.TopicButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.XSEWTab.SuspendLayout();
             this.ToWAVGPBox.SuspendLayout();
@@ -140,6 +141,7 @@
             // 
             // ToXSEWGPBox
             // 
+            this.ToXSEWGPBox.Controls.Add(this.TopicButton);
             this.ToXSEWGPBox.Controls.Add(this.ToXSEWREV);
             this.ToXSEWGPBox.Controls.Add(this.ToXSEWRE6);
             this.ToXSEWGPBox.Controls.Add(this.ToXSEWOpenFilesButton);
@@ -336,6 +338,16 @@
             this.SaveSPACButton.UseVisualStyleBackColor = true;
             this.SaveSPACButton.Click += new System.EventHandler(this.SaveSPACButton_Click);
             // 
+            // TopicButton
+            // 
+            this.TopicButton.Location = new System.Drawing.Point(208, 47);
+            this.TopicButton.Name = "TopicButton";
+            this.TopicButton.Size = new System.Drawing.Size(23, 23);
+            this.TopicButton.TabIndex = 4;
+            this.TopicButton.Text = "?";
+            this.TopicButton.UseVisualStyleBackColor = true;
+            this.TopicButton.Click += new System.EventHandler(this.TopicButton_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -397,6 +409,7 @@
         private System.Windows.Forms.Button ToWAVOpenFilesButton;
         private System.Windows.Forms.TextBox ToWAVFilePathBox;
         private System.Windows.Forms.Button ToWAVButton;
+        private System.Windows.Forms.Button TopicButton;
     }
 }
 

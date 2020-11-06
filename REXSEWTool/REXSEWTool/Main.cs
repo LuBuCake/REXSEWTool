@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace REXSEWTool
@@ -377,6 +378,14 @@ namespace REXSEWTool
                     ToXSEWFilePathBox.Text = "";
                 }
             }
+        }
+
+        private void TopicButton_Click(object sender, EventArgs e)
+        {
+            DialogResult ShouldOpenURL = MessageBox.Show("This will open a page in your browser, confirm?", "Original Topic Guides", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (ShouldOpenURL == DialogResult.Yes)
+                Process.Start("https://residentevilmodding.boards.net/thread/14034/resident-evil-xsew-spc-tool");
         }
     }
 }
