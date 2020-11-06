@@ -233,15 +233,21 @@ namespace REXSEWTool
 
                         newfilename = ToWAVSafeFiles[Array.IndexOf(ToWAVFiles, xsewfile)];
 
+                        XSEWFile = new XSEWReader(xsewfile, true);
+
+                        if (!XSEWFile.CheckXSEW())
+                        {
+                            MessageBox.Show(newfilename + " is not a valid XSEW file, suspending conversion.", "Ops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
                         if (newfilename.Contains(".xsew"))
                             newfilename = newfilename.Replace(".xsew", ".wav");
-
-                        XSEWFile = new XSEWReader(xsewfile, true);
 
                         int[][] DecodedData = new int[1][];
                         DecodedData[0] = XSEWFile.DecodedSamples;
 
-                        WAVFile = new WAVEWriter(Directory.SelectedPath + "/" + newfilename, XSEWFile.NumChannels, XSEWFile.SampleRate, 16, XSEWFile.DecodedSamples.Length, DecodedData);
+                        WAVFile = new WAVEWriter(Directory.SelectedPath + "/" + newfilename, 1, XSEWFile.SampleRate, 16, XSEWFile.DecodedSamples.Length, DecodedData);
                     }
 
                     MessageBox.Show("WAVE files generated!", "Yay!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -255,8 +261,8 @@ namespace REXSEWTool
         {
             using (OpenFileDialog OpenFiles = new OpenFileDialog())
             {
-                OpenFiles.Filter = "XSEW Files (*.xsew)|*.xsew";
-                OpenFiles.Title = "Select one or more XSEW files";
+                OpenFiles.Filter = "WAVE Files (*.wav)|*.wav";
+                OpenFiles.Title = "Select one or more WAVE files";
                 OpenFiles.Multiselect = true;
 
                 if (OpenFiles.ShowDialog() == DialogResult.OK)
@@ -278,6 +284,7 @@ namespace REXSEWTool
 
         private void ToXSEWButton_Click(object sender, EventArgs e)
         {
+            object SoundFile;
             XSEWWriter XSEWFile;
             string newfilename;
 
@@ -303,8 +310,6 @@ namespace REXSEWTool
 
                         newfilename = ToXSEWSafeFiles[Array.IndexOf(ToXSEWFiles, soundfile)];
 
-                        XSEWReader SoundFile = new XSEWReader(soundfile, true);
-
                         int mode;
 
                         if (ToXSEWRE6.Checked)
@@ -312,10 +317,59 @@ namespace REXSEWTool
                         else
                             mode = 2;
 
-                        if (!SoundFile.FooterFixed)
-                            SoundFile.FixFooter();
+                        SoundFile = new WAVEReader(soundfile);
 
-                        XSEWFile = new XSEWWriter(Directory.SelectedPath + "/" + newfilename, SoundFile.RIFFData, SoundFile.SmplData, SoundFile.Subchunk2Data, mode);
+                        if ((SoundFile as WAVEReader).AudioFormat != 1)
+                        {
+                            if ((SoundFile as WAVEReader).AudioFormat == 2)
+                            {
+                                SoundFile = new XSEWReader(soundfile, true);
+
+                                if (!(SoundFile as XSEWReader).CheckXSEW())
+                                {
+                                    MessageBox.Show(newfilename + " is not a valid WAVE file, suspending conversion.", "Ops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show(newfilename + " is not a valid WAVE file, suspending conversion.", "Ops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            if ((SoundFile as WAVEReader).BitsPerSample != 16 || (SoundFile as WAVEReader).NumChannels != 1)
+                            {
+                                MessageBox.Show(newfilename + " is not a valid WAVE file, suspending conversion.", "Ops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+
+                        if (newfilename.Contains(".wav"))
+                            newfilename = newfilename.Replace(".wav", ".xsew");
+
+                        if (SoundFile.GetType() == typeof(XSEWReader))
+                        {
+                            XSEWReader XSEW = SoundFile as XSEWReader;
+
+                            if (!XSEW.FooterFixed)
+                                XSEW.FixFooter();
+
+                            XSEWFile = new XSEWWriter(Directory.SelectedPath + "/" + newfilename, XSEW.RIFFData, XSEW.SmplData, XSEW.Subchunk2Data, mode);
+
+                            return;
+                        }
+                        else if (SoundFile.GetType() == typeof(WAVEReader))
+                        {
+                            WAVEReader WAV = SoundFile as WAVEReader;
+
+                            int[][][] ConvertedData = XSEWHelper.EncodeMS_IMA(WAV.Subchunk2Data[0]);
+
+                            int BlockQuantity = (int)Math.Ceiling((double)WAV.Subchunk2Data[0].Length / ((63 * 2) + 2));
+
+                            XSEWFile = new XSEWWriter(Directory.SelectedPath + "/" + newfilename, BlockQuantity, WAV.SampleRate, ConvertedData, mode);
+                        }                  
                     }
 
                     MessageBox.Show("XSEW file(s) generated!", "Yay!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);

@@ -7,8 +7,6 @@ namespace REXSEWTool
         FileStream FS;
         BinaryReader BR;
 
-        private int SupportedVersion = 13; // RE6
-
         // HEADER Buffer = 0x20 (32)
 
         public string Format;
@@ -142,7 +140,7 @@ namespace REXSEWTool
 
         public bool CheckSPAC()
         {
-            return Format == "SPAC" && Version == SupportedVersion;
+            return Format == "SPAC" && Version == 16;
         }
 
         public void ReplaceXSEW(int Index, byte[] RIFF, byte[] Smpl, byte[] SoundData)

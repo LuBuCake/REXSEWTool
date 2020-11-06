@@ -38,13 +38,6 @@ namespace REXSEWTool
             return val;
         }
 
-        public static int Sign_Extend(int Value, int Bits)
-        {
-            int shift = 8 * sizeof(int) - Bits;
-            int v = Value << shift;
-            return v >> shift;
-        }
-
         public static int[] AdaptationTable = {
             230, 230, 230, 230, 307, 409, 512, 614,
             768, 614, 512, 409, 307, 230, 230, 230
@@ -53,9 +46,68 @@ namespace REXSEWTool
         public static int[] AdaptCoeff1 = { 256, 512, 0, 192, 240, 460, 392 };
         public static int[] AdaptCoeff2 = { 0, -256, 0, 64, 0, -208, -232 };
 
+        private static int[] RemapSoundData(int[] SoundData, int TargetSampleQuantity)
+        {
+            int[] newsounddata = new int[TargetSampleQuantity];
+
+            int index = 0;
+            SoundData.CopyTo(newsounddata, index);
+            index += SoundData.Length;
+
+            if (SoundData.Length < newsounddata.Length)
+            {
+                for (int i = index; i < newsounddata.Length; i++)
+                {
+                    newsounddata[i] = 0;
+                }
+            }
+
+            return newsounddata;
+        }
+
+        public static void ChoosePredictor(int[] SoundData, ref int sample_index, ref int predictor, ref int delta)
+        {
+            int IDELTA_COUNT = 24;
+
+            int bestpred = 0;
+            int bestdelta = 0;
+            int deltasum;
+
+            for (int bpred = 0; bpred < 7; bpred++)
+            {
+                deltasum = 0;
+
+                for (int k = sample_index; k < sample_index + IDELTA_COUNT; k++)
+                {
+                    deltasum += Math.Abs(SoundData[k] - (SoundData[k - 1] * AdaptCoeff1[bpred] + SoundData[k - 2] * AdaptCoeff2[bpred] >> 8));
+                }
+
+                deltasum /= (4 * IDELTA_COUNT);
+
+                if (bpred == 0 || deltasum < bestdelta)
+                {
+                    bestpred = bpred;
+                    bestdelta = deltasum;
+                }
+
+                if (deltasum == 0)
+                {
+                    bestpred = bpred;
+                    bestdelta = 16;
+                    break;
+                }
+            }
+
+            if (bestdelta < 16)
+                bestdelta = 16;
+
+            predictor = bestpred;
+            delta = bestdelta;
+        }
+
         // DECODE
 
-        public static int IMA_MS_ExpandNibble(byte nibble, int nibble_shift, ref int predictor, ref int sample1, ref int sample2, ref int coeff1, ref int coeff2, ref int delta)
+        private static int IMA_MS_ExpandNibble(byte nibble, int nibble_shift, ref int predictor, ref int sample1, ref int sample2, ref int coeff1, ref int coeff2, ref int delta)
         {
             int sample_nibble = nibble >> nibble_shift & 0xF;
             int signed_nibble = (sample_nibble & 8) == 8 ? sample_nibble - 16 : sample_nibble;
@@ -74,15 +126,15 @@ namespace REXSEWTool
             return sample1;
         }
 
-        public static int[] DecodeBlock(int[] BlockHeader, byte[] BlockData)
+        public static int[] DecodeMS_IMA(int[] BlockHeader, byte[] BlockData)
         {
             int[] result = new int[(BlockData.Length * 2) + 2];
             int result_index = 0;
 
             int predictor = Clamp(BlockHeader[0], 0, 6);
-            int delta = Sign_Extend(BlockHeader[1], 16);
-            int sample1 = Sign_Extend(BlockHeader[2], 16);
-            int sample2 = Sign_Extend(BlockHeader[3], 16);
+            int delta = BlockHeader[1];
+            int sample1 = BlockHeader[2];
+            int sample2 = BlockHeader[3];
 
             result[result_index] = sample2; result_index++;
             result[result_index] = sample1; result_index++;
@@ -101,50 +153,50 @@ namespace REXSEWTool
 
         // ENCODE
 
-        public static int IMA_MS_SimplifyNibble(int sample, ref int sample1, ref int sample2, ref int coeff1, ref int coeff2, ref int delta)
+        private static int IMA_MS_SimplifyNibble(int sample, ref int sample1, ref int sample2, ref int coeff1, ref int coeff2, ref int delta)
         {
-            int predictor, nibble, bias;
+            int predictor, sample_nibble;
 
             predictor = ((sample1 * coeff1) + (sample2 * coeff2)) >> 8;
-            nibble = sample - predictor;
+            sample_nibble = Clamp((sample - predictor) / delta, -8, 6);
 
-            if (nibble >= 0)
-                bias = delta / 2;
-            else
-                bias = delta / 2;
+            predictor += sample_nibble * delta;
+            predictor = Clamp(predictor, -32768, 32767);
 
-            nibble = ((nibble + bias) / delta) & 0xF;
-
-            predictor += ((nibble & 0x08) == 8 ? (nibble - 16) : nibble) * delta;
+            if (sample_nibble < 0)
+                sample_nibble += 16;
 
             sample2 = sample1;
-            sample1 = Clamp(predictor, -32768, 32767);
+            sample1 = predictor;
 
-            delta = (AdaptationTable[nibble] * delta) >> 8;
+            delta = (AdaptationTable[sample_nibble] * delta) >> 8;
 
             if (delta < 16)
                 delta = 16;
 
-            return nibble;
+            return sample_nibble;
         }
 
-        public static int[] GenerateBlockHeader(int[] SoundData, ref int predictor, ref int delta, ref int sample1, ref int sample2, ref int sample_index)
+        private static int[] GenerateBlockHeader(int[] SoundData, ref int predictor, ref int delta, ref int coeff1, ref int coeff2, ref int sample1, ref int sample2, ref int sample_index)
         {
-            sample1 = SoundData[sample_index]; sample_index++;
             sample2 = SoundData[sample_index]; sample_index++;
+            sample1 = SoundData[sample_index]; sample_index++;
 
-            delta = 16;
+            ChoosePredictor(SoundData, ref sample_index, ref predictor, ref delta);
+
+            coeff1 = AdaptCoeff1[predictor];
+            coeff2 = AdaptCoeff2[predictor];
 
             int[] BlockHeader = new int[4];
             BlockHeader[0] = predictor;
             BlockHeader[1] = delta;
-            BlockHeader[2] = sample2;
-            BlockHeader[3] = sample1;
+            BlockHeader[2] = sample1;
+            BlockHeader[3] = sample2;
 
             return BlockHeader;
         }
 
-        public static int[] GenerateBlockData(int[] SoundData, ref int coeff1, ref int coeff2, ref int sample1, ref int sample2, ref int delta, ref int sample_index)
+        private static int[] GenerateBlockData(int[] SoundData, ref int coeff1, ref int coeff2, ref int sample1, ref int sample2, ref int delta, ref int sample_index)
         {
             int[] BlockData = new int[63];
 
@@ -160,25 +212,6 @@ namespace REXSEWTool
             return BlockData;
         }
 
-        public static int[] RemapSoundData(int[] SoundData, int TargetSampleQuantity)
-        {
-            int[] newsounddata = new int[TargetSampleQuantity];
-
-            int index = 0;
-            SoundData.CopyTo(newsounddata, index);
-            index += SoundData.Length;
-
-            if (SoundData.Length < newsounddata.Length) // Will probably aways be
-            {
-                for (int i = index; i < newsounddata.Length; i++)
-                {
-                    newsounddata[i] = 0;
-                }
-            }
-
-            return newsounddata;
-        }
-
         public static int[][][] EncodeMS_IMA(int[] SoundData)
         {
             int BlockQuantity = (int)Math.Ceiling((double)SoundData.Length / ((63 * 2) + 2));
@@ -188,19 +221,18 @@ namespace REXSEWTool
             Result[0] = new int[BlockQuantity][]; // Block Header
             Result[1] = new int[BlockQuantity][]; // Block Data
 
-            // Master indexer
-            int sample_index = 0;
-
             int predictor = 0;
             int delta = 0;
-            int coeff1 = AdaptCoeff1[predictor];
-            int coeff2 = AdaptCoeff2[predictor];
+            int coeff1 = 0;
+            int coeff2 = 0;
             int sample1 = 0;
             int sample2 = 0;
 
+            int sample_index = 0;
+
             for (int i = 0; i < BlockQuantity; i++)
             {
-                Result[0][i] = GenerateBlockHeader(SoundData, ref predictor, ref delta, ref sample1, ref sample2, ref sample_index);
+                Result[0][i] = GenerateBlockHeader(SoundData, ref predictor, ref delta, ref coeff1, ref coeff2, ref sample1, ref sample2, ref sample_index);
                 Result[1][i] = GenerateBlockData(SoundData, ref coeff1, ref coeff2, ref sample1, ref sample2, ref delta, ref sample_index);
             }
 
@@ -383,7 +415,7 @@ namespace REXSEWTool
 
             for (int i = 0; i < NumBlocks; i++)
             {
-                int[] Decoded = XSEWHelper.DecodeBlock(BlockHeader[i], BlockData[i]);
+                int[] Decoded = XSEWHelper.DecodeMS_IMA(BlockHeader[i], BlockData[i]);
 
                 Decoded.CopyTo(DecodedSamples, index);
                 index += Decoded.Length;
@@ -392,7 +424,12 @@ namespace REXSEWTool
 
         public bool CheckXSEW()
         {
-            return ChunkID == "RIFF" && Format == "WAVE" && AudioFormat == 2;
+            if (ChunkID == "RIFF" && Format == "WAVE")
+            {
+                return AudioFormat == 2 && BlockAlign == 70 && NumChannels == 1;
+            }
+
+            return false;
         }
     }
 
@@ -408,35 +445,93 @@ namespace REXSEWTool
         public uint Subchunk1Size = 50;
         public ushort AudioFormat = 2;
         public ushort NumChannels = 1;
-        public uint SampleRate;         // 4 Bytes 8000, 44100, etc...
-        public uint ByteRate;           // 4 Bytes SampleRate * NumChannels * BitsPerSample / 8
+        public uint SampleRate;
+        public uint ByteRate;
         public ushort BlockAlign = 70;
         public ushort BitsPerSample = 4;
 
         // ADPCM Extra data
-        public uint ExtraDataSize = 32;
+        public ushort ExtraDataSize = 32;
         public byte[] ExtraData = new byte[] { 0x80, 0, 7, 0, 0, 1, 0, 0, 0, 2, 0, 0xFF, 0, 0, 0, 0, 0xC0, 0, 0x40, 0, 0xF0, 0, 0, 0, 0xCC, 1, 0x30, 0xFF, 0x88, 1, 0x18, 0xFF };
 
         // DATA sub-chunk
-        public string Subchunck2ID;     // 4 Bytes raw string 'data'
-        public uint Subchunk2Size;      // 4 Bytes NumSamples * NumChannels * BitsPerSample / 8
-        public int[] Subchunk2Data;     // Var array containing the raw sample data
+        public string Subchunck2ID = "data";
+        public uint Subchunk2Size;
+        public int[][][] Subchunk2Data;
+
+        // SMPL sub-chunk
+        public byte[] SmplData;
+
+        public XSEWWriter(string FilePath, int BlockQuantity, uint SampleRate, int[][][] BlockData, int Mode = 1)
+        {
+            WriteNewXSEW(FilePath, BlockQuantity, SampleRate, BlockData, Mode);
+        }
 
         public XSEWWriter(string FilePath, byte[] XSEWRIFFData, byte[] XSEWSmplData, byte[] XSEWSoundData, int Mode = 1)
         {
             WriteExistentXSEW(FilePath, XSEWRIFFData, XSEWSmplData, XSEWSoundData, Mode);
         }
 
-        private void WriteNewXSEW(string FilePath, uint SampleRate, int[] SoundData)
+        private void WriteNewXSEW(string FilePath, int BlockQuantity, uint SampleRate, int[][][] BlockData, int Mode)
         {
             FileStream FS = new FileStream(FilePath, FileMode.Create);
             BinaryWriter BW = new BinaryWriter(FS);
 
-            int Samples = SoundData.Length;
+            // Getting Data
+
             ByteRate = SampleRate * NumChannels * BitsPerSample / 8;
 
-            Subchunk2Data = SoundData;
+            Subchunk2Size = (uint)(BlockQuantity * BlockAlign);
+            Subchunk2Data = BlockData;
 
+            SmplData = XSEWHelper.XSEWFooterSmpl();
+
+            ChunkSize = (uint)(4 + (8 + Subchunk1Size) + 8 + Subchunk2Size + SmplData.Length);
+
+            // Writing
+
+            // RIFF Chunk
+            BW.Write(ChunkID.ToCharArray());
+            BW.Write(ChunkSize);
+            BW.Write(Format.ToCharArray());
+
+            // FMT sub-chunk
+            BW.Write(Subchunck1ID.ToCharArray());
+            BW.Write(Subchunk1Size);
+            BW.Write(AudioFormat);
+            BW.Write(NumChannels);
+            BW.Write(SampleRate);
+            BW.Write(ByteRate);
+            BW.Write(BlockAlign);
+            BW.Write(BitsPerSample);
+
+            // Extra data
+            BW.Write(ExtraDataSize);
+            BW.Write(ExtraData);
+
+            // DATA sub-chunk
+            BW.Write(Subchunck2ID.ToCharArray());
+            BW.Write(Subchunk2Size);
+
+            for (int i = 0; i < BlockQuantity; i++)
+            {
+                // Header
+                BW.Write((byte)BlockData[0][i][0]);
+                BW.Write((short)BlockData[0][i][1]);
+                BW.Write((short)BlockData[0][i][2]);
+                BW.Write((short)BlockData[0][i][3]);
+
+                // Data
+                for (int s = 0; s < BlockData[1][i].Length; s++)
+                {
+                    BW.Write((byte)BlockData[1][i][s]);
+                }
+            }
+
+            BW.Write(SmplData);
+
+            if (Mode > 1)
+                BW.Write(XSEWHelper.XSEWFooterTimeVer());
 
             FS.Dispose();
             BW.Dispose();

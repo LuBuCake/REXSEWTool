@@ -78,6 +78,9 @@ namespace REXSEWTool
                 BlockAlign = BR.ReadUInt16();
                 BitsPerSample = BR.ReadUInt16();
 
+                if (AudioFormat != 1)
+                    return;
+
                 // DATA Reading
 
                 for (int i = 0; i < 4; i++)
