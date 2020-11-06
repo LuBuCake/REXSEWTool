@@ -22,7 +22,7 @@ namespace REXSEWTool
         private int XSEWRIFFBufferSize = 0x4E;
         private int XSEWSmplBufferSize = 0x44;
 
-        public int MetaSize; // SoundDataStart - ((1024 * NumSounds) + 32)
+        public int MetaSize;
         public byte[] Meta;
 
         public byte[][] XSEWRIFFData;
