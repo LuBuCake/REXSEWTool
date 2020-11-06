@@ -140,7 +140,7 @@ namespace REXSEWTool
 
         public bool CheckSPAC()
         {
-            return Format == "SPAC" && Version == 16;
+            return Format == "SPAC" && Version == 13;
         }
 
         public void ReplaceXSEW(int Index, byte[] RIFF, byte[] Smpl, byte[] SoundData)
